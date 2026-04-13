@@ -160,6 +160,16 @@
 
     /* ── Footer ── */
     .footer { text-align: center; font-size: 11px; color: var(--text3); padding: 24px 0 16px; }
+
+    /* ── Teclado en pantalla ── */
+    .onscreen-kb { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; margin-bottom: 20px; }
+    .kb-key { height: 44px; min-width: 44px; padding: 0 6px; border-radius: 8px; border: 0.5px solid var(--border2); background: var(--surface); font-size: 18px; font-weight: 700; cursor: pointer; color: var(--text); transition: background .1s, transform .08s; display: flex; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; flex-shrink: 0; }
+    .kb-key:hover  { background: var(--bg); }
+    .kb-key:active { transform: scale(.92); background: var(--border); }
+    .kb-key.kb-back { font-size: 18px; background: var(--warn-bg); border-color: var(--border2); color: var(--warn); min-width: 52px; }
+    .kb-key.kb-back:hover { background: #f5e8cc; }
+    .kb-key.kb-enter { font-size: 13px; font-weight: 700; background: var(--info-bg); border-color: var(--info); color: var(--info); min-width: 62px; letter-spacing: .02em; }
+    .kb-key.kb-enter:hover { background: #d4e6f8; }
   </style>
 </head>
 <body>
@@ -181,6 +191,8 @@
     </div>
     <div class="quick-btns" id="quick-btns"></div>
   </div>
+  <!-- Teclado en pantalla -->
+  <div class="onscreen-kb" id="onscreen-kb"></div>
 
   <div class="challenge-area">
     <div class="ch-top">
@@ -433,6 +445,49 @@ function onMainChange() {
 }
 
 buildQuickBtns();
+
+function buildKeyboard() {
+  const kb = document.getElementById('onscreen-kb');
+  kb.innerHTML = '';
+  const input = document.getElementById('num-input');
+  [1,2,3,4,5,6,7,8,9,0].forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'kb-key';
+    btn.textContent = d;
+    btn.setAttribute('tabindex', '-1');
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const next = (input.value === '' ? '' : input.value) + String(d);
+      const v = parseInt(next);
+      if (v >= 1 && v <= 100) { input.value = next; clearTimeout(inputTimer); setN(v, document.getElementById('qb-'+v)); }
+      else if (next === '0') { input.value = next; }
+    });
+    kb.appendChild(btn);
+  });
+  const back = document.createElement('button');
+  back.className = 'kb-key kb-back';
+  back.innerHTML = '⌫';
+  back.setAttribute('tabindex', '-1');
+  back.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const next = String(input.value).slice(0, -1);
+    input.value = next;
+    const v = parseInt(next);
+    if (v >= 1 && v <= 100) { clearTimeout(inputTimer); setN(v, document.getElementById('qb-'+v)); }
+  });
+  kb.appendChild(back);
+  const enter = document.createElement('button');
+  enter.className = 'kb-key kb-enter';
+  enter.textContent = 'Intro';
+  enter.setAttribute('tabindex', '-1');
+  enter.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const v = parseInt(input.value);
+    if (v >= 1 && v <= 100) { clearTimeout(inputTimer); setN(v, document.getElementById('qb-'+v)); }
+  });
+  kb.appendChild(enter);
+}
+buildKeyboard();
 setN(8, document.getElementById('qb-8'));
 </script>
 </body>

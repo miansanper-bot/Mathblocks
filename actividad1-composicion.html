@@ -268,6 +268,54 @@
       color: var(--text3);
       padding: 24px 0 16px;
     }
+
+    /* ── Teclado en pantalla ── */
+    .onscreen-kb {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+      margin-top: 10px;
+    }
+    .kb-key {
+      height: 44px;
+      min-width: 44px;
+      padding: 0 6px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border2);
+      background: var(--surface);
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text);
+      transition: background .1s, transform .08s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-user-select: none;
+      flex-shrink: 0;
+    }
+    .kb-key:hover  { background: var(--bg); }
+    .kb-key:active { transform: scale(.92); background: var(--border); }
+    .kb-key.kb-back {
+      font-size: 18px;
+      background: var(--warn-bg);
+      border-color: var(--border2);
+      color: var(--warn);
+      min-width: 52px;
+    }
+    .kb-key.kb-back:hover { background: #f5e8cc; }
+    .kb-key.kb-enter {
+      font-size: 13px;
+      font-weight: 700;
+      background: var(--info-bg);
+      border-color: var(--info);
+      color: var(--info);
+      min-width: 62px;
+      letter-spacing: .02em;
+    }
+    .kb-key.kb-enter:hover { background: #d4e6f8; }
   </style>
 </head>
 <body>
@@ -289,6 +337,9 @@
     </div>
     <div class="quick-btns" id="quick-btns"></div>
   </div>
+
+  <!-- Teclado en pantalla -->
+  <div class="onscreen-kb" id="onscreen-kb"></div>
 
   <div class="detail-panel" id="detail-panel">
     <div class="detail-title" id="detail-title"></div>
@@ -389,7 +440,7 @@ function renderAll(n) {
     const chip = document.createElement('div');
     chip.className = 'eq-chip';
     chip.id = `chip-${r}-${c}`;
-    chip.textContent = r === 1 ? `línea de ${c}` : r === c ? `${r} × ${c} (cuadrado)` : `${r} × ${c}`;
+    chip.textContent = r === c ? `${r} × ${c} (cuadrado)` : `${r} × ${c}`;
     chip.onclick = () => selectForm(r, c, n, color);
     allEq.appendChild(chip);
   });
@@ -408,11 +459,9 @@ function renderAll(n) {
     card.appendChild(wrap);
     const lbl = document.createElement('div');
     lbl.className = 'form-label';
-    lbl.innerHTML = r === 1
-      ? `<strong>Línea de ${c}</strong>`
-      : r === c
+    lbl.innerHTML = r === c
         ? `<strong>${r} × ${c}</strong> — cuadrado`
-        : `<strong>${r} × ${c}</strong> — rectángulo`;
+        : `<strong>${r} × ${c}</strong>`;
     card.appendChild(lbl);
     card.onclick = () => selectForm(r, c, n, color);
     grid.appendChild(card);
@@ -432,7 +481,7 @@ function selectForm(rows, cols, n, color) {
 
   document.getElementById('detail-panel').classList.add('visible');
 
-  const shapeLabel = rows === 1 ? `línea de ${n}` : rows === cols ? `cuadrado ${rows}×${cols}` : `rectángulo ${rows}×${cols}`;
+  const shapeLabel = rows === cols ? `cuadrado ${rows}×${cols}` : `${rows} × ${cols}`;
   document.getElementById('detail-title').textContent = `El ${n} como ${shapeLabel}`;
 
   const bd = document.getElementById('big-display');
@@ -442,21 +491,26 @@ function selectForm(rows, cols, n, color) {
   bg.querySelectorAll('.bcell').forEach((cell, i) => { cell.style.animationDelay = i * 0.015 + 's'; cell.classList.add('big-cell'); });
   bd.appendChild(bg);
 
-  /* Ecuación: primero suma, luego multiplicación */
-  const sumEq = buildEquation(rows, cols, n);
+  /* Ecuación: 1.º suma  2.º multiplicación  3.º lectura natural */
+  const sumEq  = buildEquation(rows, cols, n);
   const multEq = `${rows} × ${cols} = ${n}`;
-  document.getElementById('eq-bar').innerHTML = sumEq + '<br>' + multEq;
+  const vez    = rows === 1 ? 'vez' : 'veces';
+  const readEq = rows === cols
+    ? `${rows} ${vez} el ${cols}`
+    : `${rows} ${vez} el ${cols}  —  y también: el ${cols}, ${rows} ${vez}`;
+  document.getElementById('eq-bar').innerHTML =
+    sumEq + '<br>' + multEq + '<br><span style="font-weight:400;font-size:13px;color:var(--text2)">' + readEq + '</span>';
 
   /* Tags */
   const tags = document.getElementById('detail-tags');
   tags.innerHTML = '';
   const addTag = (t, cls) => { const el = document.createElement('div'); el.className = 'tag ' + cls; el.textContent = t; tags.appendChild(el); };
-  if (rows === 1)              addTag('Línea', 'blue');
-  if (rows === cols)           addTag('Cuadrado', 'amber');
+  if (rows === 1)                addTag('1 fila', 'blue');
+  if (rows === cols)             addTag('Cuadrado', 'amber');
   if (rows !== cols && rows > 1) addTag('Rectángulo', 'blue');
   if (rows === 2 || cols === 2)  addTag('Doble', 'green');
-  if (isPrime(n))              addTag('Número primo — solo 2 formas', 'amber');
-  if (rows !== cols)           addTag(`${rows}×${cols} = ${cols}×${rows} (conmutativa)`, 'green');
+  if (isPrime(n))                addTag('Número primo — solo 2 formas', 'amber');
+  if (rows !== cols)             addTag(`${rows}×${cols} = ${cols}×${rows} (conmutativa)`, 'green');
 
   /* Concept boxes */
   const cr = document.getElementById('concept-row');
@@ -503,7 +557,72 @@ function onManualChange() {
   if (v >= 1 && v <= 100) { document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active')); renderAll(v); }
 }
 
+function buildKeyboard() {
+  const kb = document.getElementById('onscreen-kb');
+  kb.innerHTML = '';
+  const input = document.getElementById('num-input');
+
+  // Digits 0-9
+  [1,2,3,4,5,6,7,8,9,0].forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'kb-key';
+    btn.textContent = d;
+    btn.setAttribute('tabindex', '-1');
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();          // no blur the input
+      const cur = input.value === '' ? '' : input.value;
+      const next = cur + String(d);
+      const v = parseInt(next);
+      if (v >= 1 && v <= 100) {
+        input.value = next;
+        clearTimeout(inputTimer);
+        document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+        renderAll(v);
+      } else if (next === '0' || next === '') {
+        input.value = next;        // allow typing mid-number
+      }
+    });
+    kb.appendChild(btn);
+  });
+
+  // Backspace
+  const back = document.createElement('button');
+  back.className = 'kb-key kb-back';
+  back.innerHTML = '⌫';
+  back.setAttribute('tabindex', '-1');
+  back.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const cur = String(input.value);
+    const next = cur.slice(0, -1);
+    input.value = next;
+    const v = parseInt(next);
+    if (v >= 1 && v <= 100) {
+      clearTimeout(inputTimer);
+      document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+      renderAll(v);
+    }
+  });
+  kb.appendChild(back);
+
+  // Enter
+  const enter = document.createElement('button');
+  enter.className = 'kb-key kb-enter';
+  enter.textContent = 'Intro';
+  enter.setAttribute('tabindex', '-1');
+  enter.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const v = parseInt(input.value);
+    if (v >= 1 && v <= 100) {
+      clearTimeout(inputTimer);
+      document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+      renderAll(v);
+    }
+  });
+  kb.appendChild(enter);
+}
+
 buildQuickBtns();
+buildKeyboard();
 renderAll(8);
 </script>
 </body>
