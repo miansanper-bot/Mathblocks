@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathBlocks — Descubre todas las formas</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f4f0;
+      --surface:   #ffffff;
+      --border:    #e0ddd6;
+      --border2:   #c8c4bb;
+      --text:      #1a1916;
+      --text2:     #6b6860;
+      --text3:     #a09d97;
+      --success:   #2d7a4f;
+      --success-bg:#e8f5ee;
+      --success-bd:#b6ddc8;
+      --info:      #1a5fa8;
+      --info-bg:   #e8f0fb;
+      --warn:      #7a5c1a;
+      --warn-bg:   #fdf3e0;
+      --danger:    #a82020;
+      --danger-bg: #fce8e8;
+      --radius:    10px;
+      --radius-lg: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #1a1916;
+        --surface:   #242320;
+        --border:    #333129;
+        --border2:   #4a4740;
+        --text:      #f0ede8;
+        --text2:     #9a9790;
+        --text3:     #6b6860;
+        --success:   #5dba86;
+        --success-bg:#1a3328;
+        --success-bd:#2d5a42;
+        --info:      #6aadec;
+        --info-bg:   #1a2a3d;
+        --warn:      #e0b854;
+        --warn-bg:   #2d2510;
+        --danger:    #e06060;
+        --danger-bg: #3d1a1a;
+      }
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+    .app-logo span { color: var(--info); }
+    .app-badge { font-size: 11px; background: var(--success-bg); color: var(--success); padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+    .app-desc { font-size: 12px; color: var(--text3); margin-left: auto; }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ── Number selector ── */
+    .num-selector { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stepper { display: flex; align-items: center; background: var(--surface); border: 0.5px solid var(--border2); border-radius: var(--radius); overflow: hidden; }
+    .step-btn { width: 38px; height: 44px; border: none; background: transparent; font-size: 20px; cursor: pointer; color: var(--text2); transition: background .12s; }
+    .step-btn:hover { background: var(--bg); }
+    .num-input { width: 68px; height: 44px; border: none; border-left: 0.5px solid var(--border); border-right: 0.5px solid var(--border); background: transparent; font-size: 22px; font-weight: 700; text-align: center; color: var(--text); -moz-appearance: textfield; }
+    .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .num-input:focus { outline: none; background: var(--bg); }
+    .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .np-btn { height: 36px; padding: 0 12px; border-radius: 8px; border: 0.5px solid var(--border2); background: var(--surface); font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text2); transition: all .12s; }
+    .np-btn:hover { background: var(--bg); color: var(--text); }
+    .np-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    /* ── Challenge area ── */
+    .challenge-area {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .ch-top { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+    .big-number { font-size: 52px; font-weight: 700; color: var(--text); min-width: 64px; text-align: center; line-height: 1; }
+    .ch-info { flex: 1; }
+    .ch-q { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .ch-hint { font-size: 13px; color: var(--text2); }
+    .hint-btn { font-size: 12px; color: var(--info); background: none; border: none; cursor: pointer; padding: 4px 0; display: block; margin-top: 5px; text-decoration: underline; text-underline-offset: 2px; }
+
+    /* ── Builder ── */
+    .builder { display: flex; flex-direction: column; gap: 12px; }
+    .builder-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .builder-label { font-size: 13px; color: var(--text2); min-width: 56px; }
+    .dim-input { width: 56px; height: 40px; border-radius: 8px; border: 0.5px solid var(--border2); background: var(--bg); font-size: 20px; font-weight: 700; text-align: center; color: var(--text); -moz-appearance: textfield; }
+    .dim-input::-webkit-outer-spin-button, .dim-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .dim-input:focus { outline: none; border-color: var(--info); }
+    .dim-x { font-size: 20px; color: var(--text3); }
+    .total-display { font-size: 14px; color: var(--text2); font-weight: 500; }
+    .total-display.match { color: var(--success); }
+    .total-display.over  { color: var(--danger); }
+    .preview-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .mini-prev { min-height: 20px; overflow: hidden; }
+    .try-btn { padding: 10px 24px; border-radius: var(--radius); border: none; background: var(--text); color: var(--bg); font-size: 14px; cursor: pointer; font-weight: 600; transition: opacity .15s; }
+    .try-btn:hover { opacity: .85; }
+    .try-btn:disabled { opacity: .3; cursor: default; }
+
+    /* ── Feedback ── */
+    .feedback-msg { text-align: center; font-size: 14px; font-weight: 600; padding: 10px 14px; border-radius: var(--radius); margin-top: 12px; display: none; }
+    .feedback-msg.ok  { background: var(--success-bg); color: var(--success); display: block; }
+    .feedback-msg.err { background: var(--danger-bg);  color: var(--danger);  display: block; }
+    .feedback-msg.dup { background: var(--warn-bg);    color: var(--warn);    display: block; }
+
+    /* ── Found section ── */
+    .found-section { margin-top: 4px; }
+    .found-title { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+    .found-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .found-card {
+      background: var(--surface);
+      border: 0.5px solid var(--success-bd);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      animation: popIn .25s ease;
+      overflow: hidden;
+      min-width: 110px;
+    }
+    @keyframes popIn { from { transform:scale(.8); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+    .found-sum     { font-size: 11px; color: var(--text2); text-align: center; line-height: 1.5; }
+    .found-mult    { font-size: 14px; font-weight: 700; color: var(--success); text-align: center; }
+    .found-reading { font-size: 10px; color: var(--text3); text-align: center; line-height: 1.6; font-style: italic; white-space: pre-line; }
+    .found-divider { width: 100%; height: 0.5px; background: var(--border); margin: 1px 0; }
+
+    .progress-label { font-size: 12px; color: var(--text2); margin-top: 14px; line-height: 1.7; }
+
+    /* ── shared grid helpers ── */
+    .block-grid { display: inline-grid; }
+    .bcell { border-radius: 3px; border: 0.5px solid rgba(0,0,0,.1); }
+
+    /* ── Footer ── */
+    .footer { text-align: center; font-size: 11px; color: var(--text3); padding: 24px 0 16px; }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">Math<span>Blocks</span></div>
+  <div class="app-badge">Actividad 2</div>
+  <div class="app-desc">Descubre todas las formas · Basado en Numberblocks</div>
+</header>
+
+<div class="container">
+
+  <div class="num-selector">
+    <div class="stepper">
+      <button class="step-btn" onclick="changeN(-1)">−</button>
+      <input class="num-input" type="number" id="num-input" min="1" max="100" value="8"
+        oninput="onMainInput()" onchange="onMainChange()">
+      <button class="step-btn" onclick="changeN(1)">+</button>
+    </div>
+    <div class="quick-btns" id="quick-btns"></div>
+  </div>
+
+  <div class="challenge-area">
+    <div class="ch-top">
+      <div class="big-number" id="big-n">8</div>
+      <div class="ch-info">
+        <div class="ch-q">¿De cuántas formas puedes construir el <span id="ch-n">8</span>?</div>
+        <div class="ch-hint">Encontradas: <strong id="found-count">0</strong> de <strong id="total-count">?</strong></div>
+        <button class="hint-btn" onclick="giveHint()">Dame una pista</button>
+      </div>
+    </div>
+
+    <div class="builder">
+      <div class="builder-row">
+        <span class="builder-label">Filas</span>
+        <input class="dim-input" type="number" id="rows-in" min="1" max="100" value="1" oninput="updatePreview()">
+        <span class="dim-x">×</span>
+        <span class="builder-label">Columnas</span>
+        <input class="dim-input" type="number" id="cols-in" min="1" max="100" value="8" oninput="updatePreview()">
+        <div class="total-display match" id="total-disp">= 8</div>
+      </div>
+      <div class="preview-wrap">
+        <div class="mini-prev" id="mini-prev"></div>
+        <button class="try-btn" id="try-btn" onclick="tryShape()">Probar esta forma</button>
+      </div>
+    </div>
+
+    <div class="feedback-msg" id="feedback-msg"></div>
+  </div>
+
+  <div class="found-section">
+    <div class="found-title">Formas descubiertas</div>
+    <div class="found-grid" id="found-grid"></div>
+    <div class="progress-label" id="progress-label"></div>
+  </div>
+
+  <div class="footer">MathBlocks · AULA-DUA · Basado en Numberblocks (BBC / NCETM)</div>
+</div>
+
+<script>
+const PALETTE = ['#E05252','#E07A52','#D4B32A','#4CAF50','#2196F3','#7B52D4','#AB47BC','#EC407A','#009688','#FF5722','#5C6BC0','#00897B','#F06292','#29B6F6','#66BB6A','#FFA726'];
+function getColor(n) { return PALETTE[(n - 1) % PALETTE.length]; }
+
+function getFactors(n) {
+  const pairs = [];
+  for (let r = 1; r <= n; r++) { if (n % r === 0) pairs.push([r, n / r]); }
+  return pairs;
+}
+
+/* rows = nº de veces (filas), cols = tamaño del grupo (columnas) */
+
+function sumLabel(rows, cols, n) {
+  if (rows === 1 && cols === 1) return '1 = 1';
+  if (rows === 1) {
+    if (n <= 10) return Array(n).fill('1').join(' + ') + ` = ${n}`;
+    return `1 + 1 + … (${n} veces) = ${n}`;
+  }
+  if (rows <= 6) return Array(rows).fill(cols).join(' + ') + ` = ${n}`;
+  return `${cols} + ${cols} + … (${rows} veces) = ${n}`;
+}
+
+function multLabel(rows, cols, n) {
+  return `${rows} × ${cols} = ${n}`;
+}
+
+function readingLabel(rows, cols) {
+  if (rows === cols) return `${rows} veces el ${cols}`;
+  const vez = rows === 1 ? 'vez' : 'veces';
+  return `${rows} ${vez} el ${cols}\ny también: el ${cols}, ${rows} ${vez}`;
+}
+
+function cellSize(rows, cols, maxW, maxH, gap) {
+  gap = gap || 2;
+  return Math.max(4, Math.min(
+    Math.floor((maxW - (cols - 1) * gap) / cols),
+    Math.floor((maxH - (rows - 1) * gap) / rows)
+  ));
+}
+
+function makeGrid(rows, cols, cs, gap, color) {
+  const g = document.createElement('div');
+  g.className = 'block-grid';
+  g.style.gridTemplateColumns = `repeat(${cols}, ${cs}px)`;
+  g.style.gap = gap + 'px';
+  for (let i = 0; i < rows * cols; i++) {
+    const c = document.createElement('div');
+    c.className = 'bcell';
+    c.style.width = cs + 'px';
+    c.style.height = cs + 'px';
+    c.style.background = color;
+    g.appendChild(c);
+  }
+  return g;
+}
+
+const QUICK = [2,3,4,5,6,8,9,12,16,20,24,36];
+let currentN = 8;
+let foundForms = new Set();
+let allForms = [];
+
+function buildQuickBtns() {
+  const wrap = document.getElementById('quick-btns');
+  wrap.innerHTML = '';
+  QUICK.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'np-btn' + (n === currentN ? ' active' : '');
+    btn.id = `qb-${n}`;
+    btn.textContent = n;
+    btn.onclick = () => setN(n, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function setN(n, el) {
+  currentN = n;
+  allForms = getFactors(n);
+  foundForms = new Set();
+  document.getElementById('num-input').value = n;
+  document.getElementById('big-n').textContent = n;
+  document.getElementById('ch-n').textContent = n;
+  document.getElementById('total-count').textContent = '?';
+  document.getElementById('found-count').textContent = '0';
+  document.getElementById('found-grid').innerHTML = '';
+  document.getElementById('progress-label').textContent = '';
+  document.getElementById('feedback-msg').className = 'feedback-msg';
+  document.getElementById('rows-in').value = 1;
+  document.getElementById('cols-in').value = n;
+  document.querySelectorAll('.np-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  updatePreview();
+}
+
+function updatePreview() {
+  const r = parseInt(document.getElementById('rows-in').value) || 0;
+  const c = parseInt(document.getElementById('cols-in').value) || 0;
+  const total = r * c;
+  const disp = document.getElementById('total-disp');
+  disp.textContent = `= ${total}`;
+  disp.className = 'total-display' + (total === currentN ? ' match' : total > currentN ? ' over' : '');
+  const prev = document.getElementById('mini-prev');
+  prev.innerHTML = '';
+  if (r > 0 && c > 0 && r <= 50 && c <= 50) {
+    const cs = cellSize(r, c, 180, 70, 2);
+    prev.appendChild(makeGrid(r, c, cs, 2, getColor(currentN)));
+  }
+  document.getElementById('try-btn').disabled = (total !== currentN);
+}
+
+function tryShape() {
+  const r = parseInt(document.getElementById('rows-in').value);
+  const c = parseInt(document.getElementById('cols-in').value);
+  const key = `${r}x${c}`;
+  const fb = document.getElementById('feedback-msg');
+
+  if (foundForms.has(key)) {
+    fb.className = 'feedback-msg dup';
+    fb.textContent = `¡Ya encontraste la forma ${r}×${c}!`;
+    return;
+  }
+  const valid = allForms.some(([fr, fc]) => fr === r && fc === c);
+  if (valid) {
+    foundForms.add(key);
+    fb.className = 'feedback-msg ok';
+    const msgs = ['¡Perfecto!','¡Genial!','¡Increíble!','¡Lo encontraste!','¡Brillante!'];
+    fb.textContent = msgs[Math.floor(Math.random() * msgs.length)] + `  ${multLabel(r, c, currentN)}`;
+    document.getElementById('found-count').textContent = foundForms.size;
+    addFoundCard(r, c);
+    if (foundForms.size === allForms.length) setTimeout(showVictory, 500);
+  } else {
+    fb.className = 'feedback-msg err';
+    fb.textContent = `${r} × ${c} = ${r * c}, no es ${currentN}. ¡Inténtalo de nuevo!`;
+  }
+}
+
+function addFoundCard(rows, cols) {
+  const color = getColor(currentN);
+  const n = currentN;
+  const card = document.createElement('div');
+  card.className = 'found-card';
+
+  /* 1. Visual */
+  const cs = cellSize(rows, cols, 110, 70, 2);
+  card.appendChild(makeGrid(rows, cols, cs, 2, color));
+
+  const mkD = () => { const d = document.createElement('div'); d.className = 'found-divider'; return d; };
+
+  /* 2. Suma (primero) */
+  card.appendChild(mkD());
+  const sum = document.createElement('div');
+  sum.className = 'found-sum';
+  sum.textContent = sumLabel(rows, cols, n);
+  card.appendChild(sum);
+
+  /* 3. Multiplicación (segundo) */
+  card.appendChild(mkD());
+  const mult = document.createElement('div');
+  mult.className = 'found-mult';
+  mult.textContent = multLabel(rows, cols, n);
+  card.appendChild(mult);
+
+  /* 4. Lectura en lenguaje natural */
+  card.appendChild(mkD());
+  const reading = document.createElement('div');
+  reading.className = 'found-reading';
+  reading.textContent = readingLabel(rows, cols);
+  card.appendChild(reading);
+
+  document.getElementById('found-grid').appendChild(card);
+}
+
+function giveHint() {
+  const notFound = allForms.filter(([r, c]) => !foundForms.has(`${r}x${c}`));
+  if (!notFound.length) return;
+  const [r, c] = notFound[0];
+  document.getElementById('rows-in').value = r;
+  document.getElementById('cols-in').value = c;
+  document.getElementById('total-count').textContent = allForms.length;
+  updatePreview();
+  const fb = document.getElementById('feedback-msg');
+  fb.className = 'feedback-msg dup';
+  fb.textContent = `Pista: prueba ${r} fila${r > 1 ? 's' : ''} × ${c} columna${c > 1 ? 's' : ''}`;
+}
+
+function showVictory() {
+  document.getElementById('total-count').textContent = allForms.length;
+  document.getElementById('progress-label').textContent =
+    `¡Encontraste las ${allForms.length} formas del ${currentN}! Factores: ` +
+    allForms.map(([r, c]) => `${r}×${c}`).join(', ');
+  const fb = document.getElementById('feedback-msg');
+  fb.className = 'feedback-msg ok';
+  fb.textContent = `¡¡INCREÍBLE!! ¡Encontraste todas las formas del ${currentN}! 🎉`;
+}
+
+function changeN(delta) {
+  const next = Math.max(1, Math.min(100, currentN + delta));
+  setN(next, document.getElementById(`qb-${next}`));
+}
+
+let inputTimer = null;
+function onMainInput() {
+  clearTimeout(inputTimer);
+  inputTimer = setTimeout(() => {
+    const v = parseInt(document.getElementById('num-input').value);
+    if (v >= 1 && v <= 100) setN(v, document.getElementById(`qb-${v}`));
+  }, 500);
+}
+function onMainChange() {
+  clearTimeout(inputTimer);
+  const v = parseInt(document.getElementById('num-input').value);
+  if (v >= 1 && v <= 100) setN(v, document.getElementById(`qb-${v}`));
+}
+
+buildQuickBtns();
+setN(8, document.getElementById('qb-8'));
+</script>
+</body>
+</html>

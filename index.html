@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathBlocks — Índice de actividades</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f4f0;
+      --surface:   #ffffff;
+      --border:    #e0ddd6;
+      --border2:   #c8c4bb;
+      --text:      #1a1916;
+      --text2:     #6b6860;
+      --text3:     #a09d97;
+      --info:      #1a5fa8;
+      --info-bg:   #e8f0fb;
+      --success:   #2d7a4f;
+      --success-bg:#e8f5ee;
+      --radius:    10px;
+      --radius-lg: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #1a1916;
+        --surface:   #242320;
+        --border:    #333129;
+        --border2:   #4a4740;
+        --text:      #f0ede8;
+        --text2:     #9a9790;
+        --text3:     #6b6860;
+        --info:      #6aadec;
+        --info-bg:   #1a2a3d;
+        --success:   #5dba86;
+        --success-bg:#1a3328;
+      }
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .app-header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .app-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .app-logo span { color: var(--info); }
+    .app-subtitle { font-size: 12px; color: var(--text3); }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+
+    .section-header { margin-bottom: 8px; }
+    .section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+
+    .topic-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 0;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .topic-header {
+      padding: 16px 20px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .topic-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .topic-icon.blue   { background: var(--info-bg); }
+    .topic-icon.green  { background: var(--success-bg); }
+    .topic-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .topic-desc  { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    .activity-list { padding: 8px 12px; }
+    .activity-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text);
+      transition: background .12s;
+    }
+    .activity-row:hover { background: var(--bg); }
+    .activity-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text3);
+      flex-shrink: 0;
+    }
+    .activity-info { flex: 1; }
+    .activity-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .activity-tags { display: flex; gap: 5px; margin-top: 3px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+    .tag.blue  { background: var(--info-bg);    color: var(--info);    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .activity-arrow { font-size: 16px; color: var(--text3); }
+
+    .meta-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .meta-item { font-size: 11px; color: var(--text3); }
+    .meta-item strong { color: var(--text2); }
+    .meta-sep { color: var(--border2); }
+
+    .footer { text-align: center; font-size: 11px; color: var(--text3); padding: 28px 0 16px; }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <div class="app-logo">Math<span>Blocks</span></div>
+    <div class="app-subtitle">Módulo de composición y descomposición numérica</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="section-title">Actividades disponibles</div>
+
+  <!-- Topic 1 -->
+  <div class="topic-card">
+    <div class="topic-header">
+      <div class="topic-icon blue">⬛</div>
+      <div>
+        <div class="topic-title">Composición y descomposición de bloques</div>
+        <div class="topic-desc">Explora todas las formas rectangulares de un número · Arrays · Factores</div>
+      </div>
+    </div>
+    <div class="activity-list">
+      <a class="activity-row" href="actividad1-composicion.html">
+        <div class="activity-num">1</div>
+        <div class="activity-info">
+          <div class="activity-name">Explorador de formas</div>
+          <div class="activity-tags">
+            <span class="tag blue">Visual</span>
+            <span class="tag blue">Multiplicación</span>
+            <span class="tag blue">Factores</span>
+            <span class="tag blue">Conmutativa</span>
+          </div>
+        </div>
+        <div class="activity-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Topic 2 -->
+  <div class="topic-card">
+    <div class="topic-header">
+      <div class="topic-icon green">🔍</div>
+      <div>
+        <div class="topic-title">Descubre todas las formas</div>
+        <div class="topic-desc">El alumno construye y descubre cada forma posible · Suma repetida · Lenguaje natural</div>
+      </div>
+    </div>
+    <div class="activity-list">
+      <a class="activity-row" href="actividad2-descubre.html">
+        <div class="activity-num">2</div>
+        <div class="activity-info">
+          <div class="activity-name">Reto de descubrimiento</div>
+          <div class="activity-tags">
+            <span class="tag green">Interactivo</span>
+            <span class="tag green">Suma repetida</span>
+            <span class="tag green">Multiplicación</span>
+            <span class="tag green">Lectura en voz alta</span>
+          </div>
+        </div>
+        <div class="activity-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="meta-row">
+    <div class="meta-item"><strong>Currículum:</strong> Numberblocks (BBC · NCETM) · EYFS · KS1</div>
+    <div class="meta-sep">·</div>
+    <div class="meta-item"><strong>Niveles:</strong> Nivel 3–4 (6–9 años)</div>
+    <div class="meta-sep">·</div>
+    <div class="meta-item"><strong>NEE:</strong> Sin texto obligatorio · Solo visual y audio</div>
+    <div class="meta-sep">·</div>
+    <div class="meta-item"><strong>Rango:</strong> Números 1–100</div>
+  </div>
+
+  <div class="footer">MathBlocks · AULA-DUA · Basado en Numberblocks (BBC / NCETM)</div>
+</div>
+
+</body>
+</html>

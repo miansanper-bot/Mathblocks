@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MathBlocks — Composición y descomposición</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f4f0;
+      --surface:   #ffffff;
+      --border:    #e0ddd6;
+      --border2:   #c8c4bb;
+      --text:      #1a1916;
+      --text2:     #6b6860;
+      --text3:     #a09d97;
+      --success:   #2d7a4f;
+      --success-bg:#e8f5ee;
+      --info:      #1a5fa8;
+      --info-bg:   #e8f0fb;
+      --warn:      #7a5c1a;
+      --warn-bg:   #fdf3e0;
+      --radius:    10px;
+      --radius-lg: 14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #1a1916;
+        --surface:   #242320;
+        --border:    #333129;
+        --border2:   #4a4740;
+        --text:      #f0ede8;
+        --text2:     #9a9790;
+        --text3:     #6b6860;
+        --success:   #5dba86;
+        --success-bg:#1a3328;
+        --info:      #6aadec;
+        --info-bg:   #1a2a3d;
+        --warn:      #e0b854;
+        --warn-bg:   #2d2510;
+      }
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .app-logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .app-logo span { color: var(--info); }
+    .app-badge {
+      font-size: 11px;
+      background: var(--info-bg);
+      color: var(--info);
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+    .app-desc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-left: auto;
+    }
+
+    /* ── Layout ── */
+    .container { max-width: 860px; margin: 0 auto; padding: 24px 20px; }
+
+    /* ── Number selector ── */
+    .num-selector {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .step-btn {
+      width: 38px;
+      height: 44px;
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: background .12s;
+      flex-shrink: 0;
+    }
+    .step-btn:hover { background: var(--bg); }
+    .num-input {
+      width: 68px;
+      height: 44px;
+      border: none;
+      border-left: 0.5px solid var(--border);
+      border-right: 0.5px solid var(--border);
+      background: transparent;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--text);
+      -moz-appearance: textfield;
+    }
+    .num-input::-webkit-outer-spin-button,
+    .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .num-input:focus { outline: none; background: var(--bg); }
+
+    .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .num-btn {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 0.5px solid var(--border2);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all .12s;
+    }
+    .num-btn:hover { background: var(--bg); color: var(--text); }
+    .num-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    /* ── Detail panel ── */
+    .detail-panel {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .detail-panel.visible { display: block; }
+    .detail-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+    .big-display {
+      display: flex;
+      justify-content: center;
+      padding: 16px 0 12px;
+      overflow: hidden;
+    }
+    .big-grid { display: inline-grid; }
+    .big-cell {
+      border-radius: 4px;
+      border: 0.5px solid rgba(0,0,0,.12);
+      animation: popIn .18s ease both;
+    }
+    @keyframes popIn { from { transform:scale(.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+    .equation-bar {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text);
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+    .tag.blue  { background: var(--info-bg);    color: var(--info);    }
+    .tag.green { background: var(--success-bg); color: var(--success); }
+    .tag.amber { background: var(--warn-bg);    color: var(--warn);    }
+
+    .concept-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .concept-box {
+      flex: 1;
+      min-width: 110px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+    }
+    .concept-box .clabel { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+    .concept-box .cval   { font-size: 13px; font-weight: 600; color: var(--text); word-break: break-word; }
+
+    /* ── Forms grid ── */
+    .section-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+    .all-eq { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .eq-chip {
+      font-size: 12px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all .12s;
+    }
+    .eq-chip:hover { background: var(--bg); color: var(--text); }
+    .eq-chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    .forms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+    .form-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 10px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .form-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+    .form-card.selected { border: 2px solid var(--info); background: var(--info-bg); }
+    .form-label { font-size: 12px; color: var(--text2); text-align: center; }
+    .form-label strong { color: var(--text); font-weight: 600; }
+    .block-grid-wrap { display: flex; align-items: center; justify-content: center; width: 100%; overflow: hidden; }
+    .block-grid { display: inline-grid; }
+    .bcell { border-radius: 3px; border: 0.5px solid rgba(0,0,0,.12); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text3);
+      padding: 24px 0 16px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-logo">Math<span>Blocks</span></div>
+  <div class="app-badge">Actividad 1</div>
+  <div class="app-desc">Composición y descomposición · Basado en Numberblocks</div>
+</header>
+
+<div class="container">
+
+  <div class="num-selector">
+    <div class="stepper">
+      <button class="step-btn" onclick="changeN(-1)">−</button>
+      <input class="num-input" type="number" id="num-input" min="1" max="100" value="8"
+        oninput="onManualInput()" onchange="onManualChange()">
+      <button class="step-btn" onclick="changeN(1)">+</button>
+    </div>
+    <div class="quick-btns" id="quick-btns"></div>
+  </div>
+
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-title" id="detail-title"></div>
+    <div class="big-display" id="big-display"></div>
+    <div class="equation-bar" id="eq-bar"></div>
+    <div class="tags" id="detail-tags"></div>
+    <div class="concept-row" id="concept-row"></div>
+  </div>
+
+  <div class="section-label" id="forms-title">Todas las formas del número 8</div>
+  <div class="all-eq" id="all-eq"></div>
+  <div class="forms-grid" id="forms-grid"></div>
+
+  <div class="footer">MathBlocks · AULA-DUA · Basado en Numberblocks (BBC / NCETM)</div>
+</div>
+
+<script>
+const PALETTE = ['#E05252','#E07A52','#D4B32A','#4CAF50','#2196F3','#7B52D4','#AB47BC','#EC407A','#009688','#FF5722','#5C6BC0','#00897B','#F06292','#29B6F6','#66BB6A','#FFA726','#EF5350','#42A5F5','#26C6DA','#7E57C2'];
+function getColor(n) { return PALETTE[(n - 1) % PALETTE.length]; }
+
+function getFactors(n) {
+  const pairs = [];
+  for (let r = 1; r <= n; r++) { if (n % r === 0) pairs.push([r, n / r]); }
+  return pairs;
+}
+
+function isSquare(n) { return Number.isInteger(Math.sqrt(n)); }
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) return false;
+  return true;
+}
+
+/* rows = nº de veces (filas), cols = tamaño del grupo (columnas) */
+function buildEquation(rows, cols, n) {
+  if (rows === 1 && cols === 1) return '1 = 1';
+  if (rows === 1) {
+    if (n <= 12) return Array(n).fill('1').join(' + ') + ` = ${n}`;
+    return `1 + 1 + … (${n} veces) = ${n}`;
+  }
+  if (rows <= 8) return Array(rows).fill(cols).join(' + ') + ` = ${n}`;
+  return `${cols} + ${cols} + … (${rows} veces) = ${n}`;
+}
+
+function cellSize(rows, cols, maxW, maxH, gap) {
+  gap = gap || 2;
+  return Math.max(4, Math.min(
+    Math.floor((maxW - (cols - 1) * gap) / cols),
+    Math.floor((maxH - (rows - 1) * gap) / rows)
+  ));
+}
+
+function makeGrid(rows, cols, cs, gap, color) {
+  const g = document.createElement('div');
+  g.className = 'block-grid';
+  g.style.gridTemplateColumns = `repeat(${cols}, ${cs}px)`;
+  g.style.gap = gap + 'px';
+  for (let i = 0; i < rows * cols; i++) {
+    const c = document.createElement('div');
+    c.className = 'bcell';
+    c.style.width = cs + 'px';
+    c.style.height = cs + 'px';
+    c.style.background = color;
+    g.appendChild(c);
+  }
+  return g;
+}
+
+const QUICK_NUMS = [4,6,8,9,12,16,20,24,36];
+let currentN = 8;
+
+function buildQuickBtns() {
+  const wrap = document.getElementById('quick-btns');
+  wrap.innerHTML = '';
+  QUICK_NUMS.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn' + (n === currentN ? ' active' : '');
+    btn.id = `qb-${n}`;
+    btn.textContent = n;
+    btn.onclick = () => setN(n, btn);
+    wrap.appendChild(btn);
+  });
+}
+
+function renderAll(n) {
+  currentN = n;
+  document.getElementById('num-input').value = n;
+  document.getElementById('forms-title').textContent = `Todas las formas del número ${n}`;
+  document.getElementById('detail-panel').classList.remove('visible');
+
+  const factors = getFactors(n);
+  const color = getColor(n);
+
+  /* chips */
+  const allEq = document.getElementById('all-eq');
+  allEq.innerHTML = '';
+  factors.forEach(([r, c]) => {
+    const chip = document.createElement('div');
+    chip.className = 'eq-chip';
+    chip.id = `chip-${r}-${c}`;
+    chip.textContent = r === 1 ? `línea de ${c}` : r === c ? `${r} × ${c} (cuadrado)` : `${r} × ${c}`;
+    chip.onclick = () => selectForm(r, c, n, color);
+    allEq.appendChild(chip);
+  });
+
+  /* cards */
+  const grid = document.getElementById('forms-grid');
+  grid.innerHTML = '';
+  factors.forEach(([r, c]) => {
+    const card = document.createElement('div');
+    card.className = 'form-card';
+    card.id = `card-${r}-${c}`;
+    const cs = cellSize(r, c, 120, 80, 2);
+    const wrap = document.createElement('div');
+    wrap.className = 'block-grid-wrap';
+    wrap.appendChild(makeGrid(r, c, cs, 2, color));
+    card.appendChild(wrap);
+    const lbl = document.createElement('div');
+    lbl.className = 'form-label';
+    lbl.innerHTML = r === 1
+      ? `<strong>Línea de ${c}</strong>`
+      : r === c
+        ? `<strong>${r} × ${c}</strong> — cuadrado`
+        : `<strong>${r} × ${c}</strong> — rectángulo`;
+    card.appendChild(lbl);
+    card.onclick = () => selectForm(r, c, n, color);
+    grid.appendChild(card);
+  });
+
+  if (factors.length > 0) selectForm(factors[0][0], factors[0][1], n, color);
+}
+
+function selectForm(rows, cols, n, color) {
+  color = color || getColor(n);
+  document.querySelectorAll('.form-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.eq-chip').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById(`card-${rows}-${cols}`);
+  const chip = document.getElementById(`chip-${rows}-${cols}`);
+  if (card) card.classList.add('selected');
+  if (chip) chip.classList.add('active');
+
+  document.getElementById('detail-panel').classList.add('visible');
+
+  const shapeLabel = rows === 1 ? `línea de ${n}` : rows === cols ? `cuadrado ${rows}×${cols}` : `rectángulo ${rows}×${cols}`;
+  document.getElementById('detail-title').textContent = `El ${n} como ${shapeLabel}`;
+
+  const bd = document.getElementById('big-display');
+  bd.innerHTML = '';
+  const cs = cellSize(rows, cols, 270, 185, 3);
+  const bg = makeGrid(rows, cols, cs, 3, color);
+  bg.querySelectorAll('.bcell').forEach((cell, i) => { cell.style.animationDelay = i * 0.015 + 's'; cell.classList.add('big-cell'); });
+  bd.appendChild(bg);
+
+  /* Ecuación: primero suma, luego multiplicación */
+  const sumEq = buildEquation(rows, cols, n);
+  const multEq = `${rows} × ${cols} = ${n}`;
+  document.getElementById('eq-bar').innerHTML = sumEq + '<br>' + multEq;
+
+  /* Tags */
+  const tags = document.getElementById('detail-tags');
+  tags.innerHTML = '';
+  const addTag = (t, cls) => { const el = document.createElement('div'); el.className = 'tag ' + cls; el.textContent = t; tags.appendChild(el); };
+  if (rows === 1)              addTag('Línea', 'blue');
+  if (rows === cols)           addTag('Cuadrado', 'amber');
+  if (rows !== cols && rows > 1) addTag('Rectángulo', 'blue');
+  if (rows === 2 || cols === 2)  addTag('Doble', 'green');
+  if (isPrime(n))              addTag('Número primo — solo 2 formas', 'amber');
+  if (rows !== cols)           addTag(`${rows}×${cols} = ${cols}×${rows} (conmutativa)`, 'green');
+
+  /* Concept boxes */
+  const cr = document.getElementById('concept-row');
+  cr.innerHTML = '';
+  const factors = getFactors(n);
+  [
+    { label: 'Multiplicación',  val: `${rows} × ${cols} = ${n}` },
+    { label: 'División',        val: `${n} ÷ ${rows} = ${cols}` },
+    { label: `Factores de ${n}`, val: factors.map(([a,b]) => `${a}×${b}`).join(', ') },
+    ...(rows !== cols ? [{ label: 'Conmutativa', val: `${rows}×${cols} = ${cols}×${rows}` }] : [])
+  ].forEach(({ label, val }) => {
+    const box = document.createElement('div');
+    box.className = 'concept-box';
+    box.innerHTML = `<div class="clabel">${label}</div><div class="cval">${val}</div>`;
+    cr.appendChild(box);
+  });
+}
+
+function setN(n, el) {
+  document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderAll(n);
+}
+
+function changeN(delta) {
+  const next = Math.max(1, Math.min(100, currentN + delta));
+  document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
+  const qb = document.getElementById(`qb-${next}`);
+  if (qb) qb.classList.add('active');
+  renderAll(next);
+}
+
+let inputTimer = null;
+function onManualInput() {
+  clearTimeout(inputTimer);
+  inputTimer = setTimeout(() => {
+    const v = parseInt(document.getElementById('num-input').value);
+    if (v >= 1 && v <= 100) { document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active')); renderAll(v); }
+  }, 500);
+}
+function onManualChange() {
+  clearTimeout(inputTimer);
+  const v = parseInt(document.getElementById('num-input').value);
+  if (v >= 1 && v <= 100) { document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active')); renderAll(v); }
+}
+
+buildQuickBtns();
+renderAll(8);
+</script>
+</body>
+</html>
